@@ -1,0 +1,107 @@
+syntax="proto3";
+
+package proto;
+
+import public "google/protobuf/empty.proto";
+import public "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/radek-ryckowski/monofs/proto;proto";
+
+
+message StatRequest {
+   string fs = 1;
+}
+
+message StatResponse {
+   string id = 1;
+   uint32 BlockSize = 2;
+	uint64 Blocks = 3;
+	uint64 BlocksFree = 4;
+	uint64 BlocksAvailable = 5;
+}
+
+service MonofsStat {
+   rpc Stat(StatRequest) returns (StatResponse) {}
+}
+
+message File {
+   string bucket = 1;
+   string name = 2;
+   string uid = 3;
+   string gid = 4;
+   int64 size = 5;
+   int64 mtime = 6;
+   int64 ctime = 7;
+   int64 atime = 8;
+   int32 mode = 9;
+   int32 type = 10;
+   string hash = 11;
+}
+
+message ListRequest {
+   string fs = 1;
+   string bucket = 2;
+}
+
+message ListResponse {
+   repeated File files = 1;
+}
+
+service MonofsProxy {
+   rpc List(ListRequest) returns (stream ListResponse) {}
+   // Put
+   // Get
+   // Delete
+   // StartTxn
+   // CommitTxn
+}
+
+message GetSnapshotRequest {
+   uint64 creation_id = 1;
+   string auth = 2;
+}
+
+message GetSnapshotResponse {
+   string id = 1;
+   string fs = 2;
+   string name = 3;
+   google.protobuf.Timestamp created = 4;
+   string status = 5;
+}
+
+message CreateSnapshotRequest {
+   string fs = 1;
+   string name = 3;
+   string auth = 4;
+}
+
+message CreateSnapshotResponse {
+   uint64 creation_id = 1;
+}
+
+message ListSnapshotsResponse {
+   string id = 1;
+   string fs = 2;
+   string name = 3;
+   google.protobuf.Timestamp created = 4;
+   string status = 5;
+}
+
+message DeleteSnapshotRequest {
+   string fs = 1;
+   string id = 2;
+   string auth = 3;
+}
+
+message DeleteSnapshotResponse {
+   string id = 1;
+   string fs = 2;
+   string status = 3;
+}
+
+service MonofsManager {
+   rpc CreateSnapshot(CreateSnapshotRequest) returns (CreateSnapshotResponse) {}
+   rpc ListSnapshots(google.protobuf.Empty) returns (stream ListSnapshotsResponse) {}
+   rpc DeleteSnapshot(DeleteSnapshotRequest) returns (DeleteSnapshotResponse) {}
+   rpc GetSnapshot(GetSnapshotRequest) returns (GetSnapshotResponse) {}
+}
